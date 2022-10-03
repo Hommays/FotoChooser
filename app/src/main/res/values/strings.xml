@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">FotoChooser</string>
+    <string name="chose">Chose</string>
+    <string name="name_of_photo">Name of photo</string>
 </resources>
