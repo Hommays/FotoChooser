@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.widget.Button
 import android.widget.ImageView
@@ -43,19 +44,24 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == IMAGE_REQUEST_CODE && resultCode == RESULT_OK)
-            textView.setText(getFilename().toString())
+            data?.data?.let { uri -> textView.text = getFilename(contentResolver, uri) }
             imageView.setImageURI(data?.data)
 
     }
     fun getFilename(contentResolver: ContentResolver, uri: Uri): String? {
-        return when(uri.scheme) {
+        return when (uri.scheme) {
             ContentResolver.SCHEME_CONTENT -> {
-                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                    val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    cursor.getString(nameIndex);
+                try {
+                    contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                        val index = cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)
+                        cursor.moveToFirst()
+                        cursor.getString(index)
+                    }
+                } catch (e: Exception) {
+                    null
                 }
             }
-            ContentResolver.SCHEME_FILE-> {
+            ContentResolver.SCHEME_FILE -> {
                 uri.path?.let { path ->
                     File(path).name
                 }
@@ -63,6 +69,5 @@ class MainActivity : AppCompatActivity() {
             else -> null
         }
     }
-
 }
 
